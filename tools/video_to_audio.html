@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video to Audio Converter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    /* File Upload Section */
+    .file-upload {
+      margin: 20px 0;
+      position: relative;
+      border: 2px dashed #007bff;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .file-upload.dragover {
+      border-color: #28a745;
+      background: rgba(40, 167, 69, 0.1);
+    }
+
+    .file-upload input[type="file"] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    .file-upload i {
+      color: #007bff;
+      font-size: 2rem;
+    }
+
+    .file-upload span {
+      display: block;
+      margin-top: 10px;
+    }
+
+    /* Convert Button */
+    #convertButton {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #convertButton:hover {
+      background-color: #0056b3;
+    }
+
+    #downloadLink {
+      display: none;
+      margin-top: 20px;
+      font-size: 1rem;
+      background-color: #28a745;
+      color: white;
+      padding: 10px 30px;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    #downloadLink:hover {
+      background-color: #218838;
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .progress {
+      height: 20px;
+      background-color: #007bff;
+      border-radius: 5px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* File Name & Upload Status */
+    #fileNameDisplay {
+      display: none;
+      color: #007bff;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    #uploadStatus {
+      display: none;
+      color: #28a745;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    /* Loading Spinner */
+    .loading {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .loading i {
+      font-size: 2rem;
+      color: #007bff;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Video to Audio Converter</h1>
+
+    <!-- File Upload Section -->
+    <div class="file-upload" id="fileUpload">
+      <i class="fas fa-upload"></i>
+      <span>Click or drop a video file here</span>
+      <input type="file" id="videoFile" accept="video/*">
+    </div>
+
+    <p id="fileNameDisplay"></p>
+    <p id="uploadStatus"></p>
+
+    <button id="convertButton" disabled>Convert</button>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="loading" id="loading">
+      <i class="fas fa-spinner"></i>
+    </div>
+
+    <a id="downloadLink"></a>
+  </div>
+
+  <script>
+    const fileUpload = document.getElementById('fileUpload');
+    const videoFileInput = document.getElementById('videoFile');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const convertButton = document.getElementById('convertButton');
+    const progressBar = document.getElementById('progressBar');
+    const progress = document.getElementById('progress');
+    const loading = document.getElementById('loading');
+    const downloadLink = document.getElementById('downloadLink');
+
+    // Drag-and-Drop Animation
+    fileUpload.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileUpload.classList.add('dragover');
+    });
+
+    fileUpload.addEventListener('dragleave', () => {
+      fileUpload.classList.remove('dragover');
+    });
+
+    fileUpload.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileUpload.classList.remove('dragover');
+      videoFileInput.files = e.dataTransfer.files;
+      validateFile();
+    });
+
+    // File Validation & Display Status
+    videoFileInput.addEventListener('change', validateFile);
+
+    function validateFile() {
+      const file = videoFileInput.files[0];
+      if (file && file.type.startsWith('video/')) {
+        convertButton.disabled = false;
+
+        // Display file name
+        fileNameDisplay.style.display = 'block';
+        fileNameDisplay.innerText = `Selected: ${file.name}`;
+
+        // Show uploading status
+        uploadStatus.style.display = 'block';
+        uploadStatus.innerText = "Uploading...";
+
+        // Simulate upload completion after 2 seconds
+        setTimeout(() => {
+          uploadStatus.innerText = "Upload complete!";
+        }, 2000);
+      } else {
+        alert('Please upload a valid video file.');
+        convertButton.disabled = true;
+        fileNameDisplay.style.display = 'none';
+        uploadStatus.style.display = 'none';
+      }
+    }
+
+    // Video to Audio Conversion
+    function convertVideoToAudio() {
+      const videoFile = videoFileInput.files[0];
+      if (videoFile) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const videoData = event.target.result;
+          const videoBlob = new Blob([videoData], { type: videoFile.type });
+          const videoUrl = URL.createObjectURL(videoBlob);
+          const video = document.createElement('video');
+          video.src = videoUrl;
+
+          video.onloadedmetadata = function () {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const mediaSource = audioCtx.createMediaElementSource(video);
+            const audioDestination = audioCtx.createMediaStreamDestination();
+            mediaSource.connect(audioDestination);
+            const audioStream = audioDestination.stream;
+
+            const mediaRecorder = new MediaRecorder(audioStream);
+            const audioChunks = [];
+
+            mediaRecorder.ondataavailable = function (event) {
+              audioChunks.push(event.data);
+              updateProgress(event);
+            };
+
+            mediaRecorder.onstop = function () {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+              const audioUrl = URL.createObjectURL(audioBlob);
+              downloadLink.href = audioUrl;
+              downloadLink.download = 'audio.wav';
+              downloadLink.innerHTML = 'Download Audio';
+              downloadLink.style.display = 'block';
+
+              // Hide progress bar and reset
+              progressBar.style.display = 'none';
+              progress.style.width = '0%';
+              loading.style.display = 'none';
+            };
+
+            mediaRecorder.start();
+            video.play();
+
+            // Show progress bar and loading spinner
+            progressBar.style.display = 'block';
+            loading.style.display = 'block';
+
+            video.onended = function () {
+              mediaRecorder.stop();
+            };
+          };
+
+          video.style.display = 'none';
+          document.body.appendChild(video);
+        };
+
+        reader.readAsArrayBuffer(videoFile);
+      }
+    }
+
+    // Update progress bar
+    function updateProgress(event) {
+      const percentage = Math.min((event.loaded / event.total) * 100, 100);
+      progress.style.width = `${percentage}%`;
+    }
+
+    // Trigger video-to-audio conversion
+    convertButton.addEventListener('click', convertVideoToAudio);
+  </script>
+</body>
+</html>

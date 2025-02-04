@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Screen Recorder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #video-container {
+            width: 90%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+        }
+
+        video {
+            display: block;
+            width: 100%;
+            max-height: 500px;
+        }
+
+        #controls-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn#stop-btn {
+            background-color: #d9534f;
+        }
+
+        .btn#stop-btn:hover {
+            background-color: #c9302c;
+        }
+
+        #timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 20px;
+            color: #fff;
+        }
+
+        /* Animation for recording state */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .recording {
+            animation: pulse 1.5s infinite;
+            background-color: #d9534f !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Screen Recorder</h1>
+    <div id="video-container">
+        <video id="video-preview" autoplay muted></video>
+    </div>
+    <div id="controls-container">
+        <button id="start-btn" class="btn">Start Recording</button>
+        <button id="stop-btn" class="btn" disabled>Stop Recording</button>
+        <span id="timer">00:00</span>
+    </div>
+
+    <script>
+        let stream;
+        let recorder;
+        let videoPreview = document.getElementById("video-preview");
+        let startBtn = document.getElementById("start-btn");
+        let stopBtn = document.getElementById("stop-btn");
+        let timerDisplay = document.getElementById("timer");
+        let startTime;
+        let timerInterval;
+
+        // Function to start recording
+        async function startRecording() {
+            try {
+                stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { mediaSource: "screen" },
+                    audio: false
+                });
+                videoPreview.srcObject = stream;
+                videoPreview.play();
+
+                recorder = new MediaRecorder(stream);
+                let chunks = [];
+                recorder.ondataavailable = function (e) {
+                    chunks.push(e.data);
+                };
+
+                recorder.onstop = function () {
+                    let blob = new Blob(chunks, { type: "video/mp4" });
+                    let videoUrl = URL.createObjectURL(blob);
+
+                    // Create a download link
+                    let downloadLink = document.createElement("a");
+                    downloadLink.href = videoUrl;
+                    downloadLink.download = `recording_${new Date().toISOString()}.mp4`;
+                    downloadLink.click();
+
+                    // Reset timer
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = "00:00";
+                };
+
+                recorder.start();
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                startBtn.classList.add("recording");
+
+                // Start timer
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+            } catch (error) {
+                alert("Error starting recording: " + error.message);
+            }
+        }
+
+        // Function to stop recording
+        function stopRecording() {
+            recorder.stop();
+            stream.getTracks().forEach(track => track.stop());
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.classList.remove("recording");
+        }
+
+        // Function to update the timer
+        function updateTimer() {
+            let elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            let minutes = Math.floor(elapsedTime / 60).toString().padStart(2, "0");
+            let seconds = (elapsedTime % 60).toString().padStart(2, "0");
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+        }
+
+        // Event listeners
+        startBtn.addEventListener("click", startRecording);
+        stopBtn.addEventListener("click", stopRecording);
+    </script>
+</body>
+</html>

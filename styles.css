@@ -1,0 +1,200 @@
+:root {
+    --bg-color: #f0f8ff;
+    --text-color: #333;
+    --card-bg: #fff;
+    --hover-color: #ddd;
+    --search-border: #007bff;
+    --search-shadow: rgba(0, 123, 255, 0.5);
+}
+
+.dark-mode {
+    --bg-color: #121212;
+    --text-color: #fff;
+    --card-bg: #1e1e1e;
+    --hover-color: #333;
+    --search-border: #1e90ff;
+    --search-shadow: rgba(30, 144, 255, 0.5);
+}
+
+/* General Styles */
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Header */
+header {
+    background-color: var(--card-bg);
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+}
+
+/* Logo */
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+/* Search Bar */
+.search-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 50%;
+    max-width: 400px;
+}
+
+#searchBox {
+    padding: 12px;
+    font-size: 16px;
+    width: 100%;
+    border-radius: 25px;
+    border: 2px solid var(--search-border);
+    background: var(--card-bg);
+    color: var(--text-color);
+    outline: none;
+    transition: 0.3s ease-in-out;
+}
+
+#searchBox:focus {
+    width: 100%;
+    box-shadow: 0px 0px 10px var(--search-shadow);
+}
+
+#searchEffects {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background-color: var(--search-border);
+    transition: width 0.3s ease-in-out;
+    transform: translateX(-50%);
+}
+
+#searchBox:focus + #searchEffects {
+    width: 100%;
+}
+
+/* Dark Mode Button */
+#darkModeToggle {
+    font-size: 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    padding: 10px;
+}
+
+/* Tool Cards */
+main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+}
+
+.tool-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px;
+    width: 90%;
+    max-width: 250px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.tool-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tool-card img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.tool-card h3 {
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+/* Footer */
+footer {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: var(--card-bg);
+    box-shadow: 0px -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .logo-container {
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .search-wrapper {
+        width: 80%;
+    }
+
+    main {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tool-card {
+        width: 90%;
+    }
+    
+}
+
+@media (max-width: 480px) {
+    .logo {
+        width: 35px;
+        height: 35px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    #searchBox {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    #darkModeToggle {
+        font-size: 18px;
+    }
+}
+/* Remove underline from links */
+.tool-card a {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+/* Ensure hover effect doesn't underline text */
+.tool-card a:hover {
+    text-decoration: none;
+}
